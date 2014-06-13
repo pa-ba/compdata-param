@@ -26,7 +26,7 @@ Author:			Patrick Bahr, Tom Hvitved
 Maintainer:		paba@di.ku.dk
 Build-Type:		Simple
 Cabal-Version:          >=1.9.2
-bug-reports:            https://bitbucket.org/paba/compdata-param/issues
+bug-reports:            https://github.com/pa-ba/compdata-param/issues
 
 extra-source-files:
   -- test files
@@ -102,5 +102,5 @@ Test-Suite test
                         test-framework, test-framework-hunit, containers, compdata-param
 
 source-repository head
-  type:     hg
-  location: https://bitbucket.org/paba/compdata-param
+  type:     git
+  location: https://github.com/pa-ba/compdata-param
