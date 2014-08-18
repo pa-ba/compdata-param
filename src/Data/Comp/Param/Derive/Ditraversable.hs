@@ -52,7 +52,6 @@ makeDitraversable fname = do
   return [InstanceD [] classType [mapMDecl,sequenceDecl]]
       where isFarg fArg funTy (constr, args) =
                 (constr, map (\t -> (t `containsType'` fArg, t `containsType'` funTy)) args)
-            checksAarg aArg (_,args) = any (`containsType` aArg) args
             filterVar _ _ nonFarg ([],[]) x  = nonFarg x
             filterVar farg _ _ ([depth],[]) x = farg depth x
             filterVar _ aarg _ ([_],[depth]) x = aarg depth x
@@ -74,12 +73,12 @@ makeDitraversable fname = do
                    let f = varE fn
                        fp = if hasFargs then VarP fn else WildP
                        conAp = foldl appE con allVars
-                       addDi False _ x = x
-                       addDi True d x = [|dimapM $(f)|]
-                       conBind (fun,d,x) y = [| $(iter d [|mapM|] (addDi fun d f)) $(varE x)  >>= $(lamE [varP x] y)|]
+                       addDi False x = x
+                       addDi True _ = [|dimapM $(f)|]
+                       conBind (fun,d,x) y = [| $(iter d [|mapM|] (addDi fun f)) $(varE x)  >>= $(lamE [varP x] y)|]
                    body <- foldr conBind [|return $conAp|] fvars
                    return $ Clause [fp, pat] (NormalB body) []
-            sequenceClause (con, pat,hasFargs,allVars, fvars) =
+            sequenceClause (con, pat,_hasFargs,allVars, fvars) =
                 do let conAp = foldl appE con allVars
                        varE' False _ x = varE x
                        varE' True d x = appE (iter d [|fmap|] [|disequence|]) (varE x)
