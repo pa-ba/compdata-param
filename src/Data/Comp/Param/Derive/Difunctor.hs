@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, PatternGuards #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Derive.Functor
@@ -18,8 +18,12 @@ module Data.Comp.Param.Derive.Difunctor
      makeDifunctor
     ) where
 
+import Prelude hiding (foldl)
+
+import Control.Applicative
 import Data.Comp.Derive.Utils
 import Data.Comp.Param.Difunctor
+import Data.Foldable
 import Language.Haskell.TH
 
 {-| Derive an instance of 'Difunctor' for a type constructor of any parametric
@@ -87,9 +91,18 @@ makeDifunctor fname = do
                                        (Just $ infixE (Just $ varE xn)
                                                       [|(.)|]
                                                       (Just ftp1)))
+                      AppT ListT tp -> [| fmap $(dimapArg conArg coArg tp f g) |]
                       SigT tp' _ ->
                           dimapArg conArg coArg tp' f g
-                      _ ->
+                      _ | Just ts <- let
+                            unTupleT (AppT s t) = (++ [t]) <$> unTupleT s
+                            unTupleT (TupleT _) = Just []
+                            unTupleT _ = Nothing
+                          in unTupleT tp ->
+                          (\ (ps, xs) -> LamE [TupP ps] (TupE xs)) <$>
+                          foldrM (\ t (ps, xs) -> newName "x" >>= \ v ->
+                                  (,) (VarP v : ps) . (:xs) . (`AppE` VarE v) <$> dimapArg conArg coArg t f g) ([],[]) ts
+                        | otherwise ->
                           if containsType tp (VarT conArg) then
                               [| dimap $f $g |]
                           else
