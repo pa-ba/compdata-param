@@ -44,7 +44,7 @@ makeOrdHD fname = do
   let classType = AppT (ConT ''OrdHD) complType
   constrs' :: [(Name,[Type])] <- mapM normalConExp constrs
   compareHDDecl <- funD 'compareHD (compareHDClauses conArg coArg constrs')
-  let context = map (\arg -> ClassP ''Ord [arg]) argNames
+  let context = map (AppT (ConT ''Ord)) argNames
   return [InstanceD context classType [compareHDDecl]]
       where compareHDClauses :: Name -> Name -> [(Name,[Type])] -> [ClauseQ]
             compareHDClauses _ _ [] = []
