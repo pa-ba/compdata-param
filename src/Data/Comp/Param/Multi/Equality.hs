@@ -25,6 +25,7 @@ import Data.Comp.Param.Multi.Ops
 import Data.Comp.Param.Multi.HDifunctor
 import Data.Comp.Param.Multi.FreshM
 import Data.Functor.Product
+import Data.Functor.Sum
 import Control.Applicative
 
 -- |Equality on parametric values. The equality test is performed inside the
@@ -33,6 +34,11 @@ class PEq a where
     peq :: a i -> a j -> FreshM Bool
 
 instance (PEq a, PEq b) => PEq (Product a b) where peq (Pair u x) (Pair v y) = liftA2 (&&) (peq u v) (peq x y)
+
+instance (PEq a, PEq b) => PEq (Sum a b) where
+    peq (InL x) (InL y) = peq x y
+    peq (InR x) (InR y) = peq x y
+    peq _       _       = pure False
 
 instance Eq a => PEq (K a) where
     peq (K x) (K y) = return $ x == y
