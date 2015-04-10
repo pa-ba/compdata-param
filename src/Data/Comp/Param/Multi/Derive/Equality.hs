@@ -43,7 +43,7 @@ makeEqHD fname = do
              else
                  [clause [wildP,wildP] (normalB [|return False|]) []]
   eqHDDecl <- funD 'eqHD (map (eqHDClause conArg coArg) constrs' ++ defC)
-  let context = map (AppT (ConT ''Eq)) argNames
+  let context = map (\arg -> mkClassP ''Eq [arg]) argNames
   return [InstanceD context classType [eqHDDecl]]
       where eqHDClause :: Name -> Name -> (Name,[Type]) -> ClauseQ
             eqHDClause conArg coArg (constr, args) = do

@@ -37,7 +37,7 @@ injn n = do
   let d = [funD i [clause [varP xvar] (normalB $ genDecl xvar n) []]]
   sequence $ sigD i (genSig fvars gvar avar bvar ivar) : d
     where genSig fvars gvar avar bvar ivar = do
-            let cxt = map (\f -> foldl appT (conT ''(:<:)) [varT f, varT gvar]) fvars
+            let cxt = map (\f -> classP ''(:<:) [varT f, varT gvar]) fvars
             let tp = foldl1 (\a f -> conT ''(:+:) `appT` f `appT` a)
                             (map varT fvars)
             let tp' = arrowT `appT` (tp `appT` varT avar `appT`
@@ -62,7 +62,7 @@ injectn n = do
   sequence $ sigD i (genSig fvars gvar avar bvar ivar) : d
     where genSig fvars gvar avar bvar ivar = do
             let hvar = mkName "h"
-            let cxt = map (\f -> foldl appT (conT ''(:<:)) [varT f, varT gvar]) fvars
+            let cxt = map (\f -> classP ''(:<:) [varT f, varT gvar]) fvars
             let tp = foldl1 (\a f -> conT ''(:+:) `appT` f `appT` a)
                             (map varT fvars)
             let tp' = conT ''Cxt `appT` varT hvar `appT` varT gvar
@@ -82,10 +82,10 @@ deepInjectn n = do
   let d = [funD i [clause [] (normalB $ genDecl n) []]]
   sequence $ sigD i (genSig fvars gvar) : d
     where genSig fvars gvar = do
-            let cxt = map (\f -> foldl appT (conT ''(:<:)) [varT f, varT gvar]) fvars
+            let cxt = map (\f -> classP ''(:<:) [varT f, varT gvar]) fvars
             let tp = foldl1 (\a f -> conT ''(:+:) `appT` f `appT` a)
                             (map varT fvars)
-            let cxt' = appT (conT ''HDifunctor) tp
+            let cxt' = classP ''HDifunctor [tp]
             let tp' = conT ''CxtFun `appT` tp `appT` varT gvar
             forallT (map PlainTV $ gvar : fvars) (sequence $ cxt' : cxt) tp'
           genDecl n = [| appSigFun $(varE $ mkName $ "inj" ++ show n) |]

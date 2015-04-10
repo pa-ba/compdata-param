@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, Rank2Types,
-  TypeOperators, GADTs #-}
+  TypeOperators, GADTs, IncoherentInstances #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Multi.HDifunctor

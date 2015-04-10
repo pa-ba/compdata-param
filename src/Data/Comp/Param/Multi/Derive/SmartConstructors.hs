@@ -36,7 +36,7 @@ smartConstructors fname = do
     liftM concat $ mapM (genSmartConstr (map tyVarBndrName targs) tname) cons
         where iTp iVar (ForallC _ cxt _) =
                   -- Check if the GADT phantom type is constrained
-                  case [y | AppT (AppT EqualityT x) y <- cxt, x == VarT iVar] of
+                  case [y | Just (x, y) <- map isEqualP cxt, x == VarT iVar] of
                     [] -> Nothing
                     tp:_ -> Just tp
               iTp _ _ = Nothing
@@ -65,7 +65,7 @@ smartConstructors fname = do
                     b = varT bvar
                     i = varT ivar
                     ftype = foldl appT (conT tname) (map varT targs')
-                    constr = foldl appT (conT ''(:<:)) [ftype, f]
+                    constr = classP ''(:<:) [ftype, f]
                     typ = foldl appT (conT ''Cxt) [h, f, a, b,maybe i return miTp]
                     typeSig = forallT (map PlainTV vars) (sequence [constr]) typ
                 sigD sname typeSig

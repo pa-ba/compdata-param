@@ -1,5 +1,5 @@
 {-# LANGUAGE EmptyDataDecls, GADTs, KindSignatures, Rank2Types,
-  MultiParamTypeClasses, TypeOperators, ScopedTypeVariables #-}
+  MultiParamTypeClasses, TypeOperators, ScopedTypeVariables, IncoherentInstances #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Multi.Term
