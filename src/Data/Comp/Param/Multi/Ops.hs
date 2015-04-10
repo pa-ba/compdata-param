@@ -72,12 +72,12 @@ instance (f :<: g) => (:<:) f (h :+: g) where
 infixr 8 :*:
 
 -- |Formal product of signatures (higher-order difunctors).
-data (f :*: g) a b = f a b :*: g a b
+data (f :*: g) a b i = f a b i :*: g a b i
 
-ffst :: (f :*: g) a b -> f a b
+ffst :: (f :*: g) a b :-> f a b
 ffst (x :*: _) = x
 
-fsnd :: (f :*: g) a b -> g a b 
+fsnd :: (f :*: g) a b :-> g a b
 fsnd (_ :*: x) = x
 
 
