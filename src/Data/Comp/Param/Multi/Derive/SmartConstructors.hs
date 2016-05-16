@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, CPP #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Multi.Derive.SmartConstructors
@@ -39,7 +39,9 @@ smartConstructors fname = do
                   -- Check if the GADT phantom type is constrained
                   case [y | Just (x, y) <- map isEqualP cxt, x == VarT iVar] of
                     [] -> case constr of
+#if __GLASGOW_HASKELL__ >= 800
                       GadtC _ _ (AppT _ tp) -> Just tp
+#endif
                       _ -> Nothing
                     tp:_ -> Just tp
               iTp _ _ = Nothing
