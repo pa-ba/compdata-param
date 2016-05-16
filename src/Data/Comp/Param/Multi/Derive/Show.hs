@@ -18,6 +18,7 @@ module Data.Comp.Param.Multi.Derive.Show
      makeShowHD
     ) where
 
+import Data.Comp.Param.Derive.Utils
 import Data.Comp.Derive.Utils
 import Data.Comp.Param.Multi.FreshM hiding (Name)
 import qualified Data.Comp.Param.Multi.FreshM as FreshM
@@ -40,48 +41,49 @@ instance Show Dummy where
   kind taking at least three arguments. -}
 makeShowHD :: Name -> Q [Dec]
 makeShowHD fname = do
-  TyConI (DataD _ name args constrs _) <- abstractNewtypeQ $ reify fname
+  Just (DataInfo _ name args constrs _) <- abstractNewtypeQ $ reify fname
   let args' = init args
   -- covariant argument
-  let coArg :: Name = tyVarBndrName $ last args'
+  let coArg :: Type = VarT $ tyVarBndrName $ last args'
   -- contravariant argument
-  let conArg :: Name = tyVarBndrName $ last $ init args'
+  let conArg :: Type = VarT $ tyVarBndrName $ last $ init args'
   let argNames = map (VarT . tyVarBndrName) (init $ init args')
   let complType = foldl AppT (ConT name) argNames
   let classType = AppT (ConT ''ShowHD) complType
-  constrs' :: [(Name,[Type])] <- mapM normalConExp constrs
+  constrs' :: [(Name,[Type], Maybe Type)] <- mapM normalConExp constrs
   showHDDecl <- funD 'showHD (map (showHDClause conArg coArg) constrs')
   let context = map (\arg -> mkClassP ''Show [arg]) argNames
-  return [InstanceD context classType [showHDDecl]]
-      where showHDClause :: Name -> Name -> (Name,[Type]) -> ClauseQ
-            showHDClause conArg coArg (constr, args) = do
+  return [mkInstanceD context classType [showHDDecl]]
+      where showHDClause :: Type -> Type -> (Name,[Type], Maybe Type) -> ClauseQ
+            showHDClause conArg' coArg' (constr, args, gadtTy) = do
               varXs <- newNames (length args) "x"
               -- Pattern for the constructor
               let patx = ConP constr $ map VarP varXs
+              let (conArg, coArg) = getBinaryFArgs conArg' coArg' gadtTy
               body <- showHDBody (nameBase constr) conArg coArg (zip varXs args)
               return $ Clause [patx] (NormalB body) []
-            showHDBody :: String -> Name -> Name -> [(Name, Type)] -> ExpQ
+            showHDBody :: String -> Type -> Type -> [(Name, Type)] -> ExpQ
             showHDBody constr conArg coArg x =
                 [|liftM (unwords . (constr :) .
                          map (\x -> if elem ' ' x then "(" ++ x ++ ")" else x))
                         (sequence $(listE $ map (showHDB conArg coArg) x))|]
-            showHDB :: Name -> Name -> (Name, Type) -> ExpQ
+            showHDB :: Type -> Type -> (Name, Type) -> ExpQ
             showHDB conArg coArg (x, tp)
-                | not (containsType tp (VarT conArg)) &&
-                  not (containsType tp (VarT coArg)) =
+                | not (containsType tp conArg) &&
+                  not (containsType tp coArg) =
                     [| return $ show $(varE x) |]
                 | otherwise =
                     case tp of
-                      AppT (VarT a) _ 
+                      AppT a _ 
                           | a == coArg -> [| unK $(varE x) |]
-                      AppT (AppT ArrowT (AppT (VarT a) _)) _
+                      AppT (AppT ArrowT (AppT a _)) _
                           | a == conArg ->
                               [| withName (\v -> do body <- (unK . $(varE x)) v
                                                     return $ "\\" ++ show v ++ " -> " ++ body) |]
                       SigT tp' _ ->
                           showHDB conArg coArg (x, tp')
                       _ ->
-                          if containsType tp (VarT conArg) then
+                          if containsType tp conArg then
                               [| showHD $(varE x) |]
                           else
                               [| liftM show $ T.mapM (liftM Dummy . unK) $(varE x) |]

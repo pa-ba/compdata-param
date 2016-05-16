@@ -19,6 +19,7 @@ module Data.Comp.Param.Derive.Ditraversable
     ) where
 
 import Data.Comp.Derive.Utils
+import Data.Comp.Param.Derive.Utils
 import Data.Comp.Param.Ditraversable
 import Data.Traversable (mapM)
 import Language.Haskell.TH
@@ -38,20 +39,21 @@ iter' n f e = run n f e
   first-order kind taking at least one argument. -}
 makeDitraversable :: Name -> Q [Dec]
 makeDitraversable fname = do
-  TyConI (DataD _cxt name args constrs _deriving) <- abstractNewtypeQ $ reify fname
+  Just (DataInfo _cxt name args constrs _deriving) <- abstractNewtypeQ $ reify fname
   let fArg = VarT . tyVarBndrName $ last args
       aArg = VarT . tyVarBndrName $ last (init args)
-      funTy = foldl AppT ArrowT [aArg,fArg]
       argNames = map (VarT . tyVarBndrName) (init $ init args)
       complType = foldl AppT (ConT name) argNames
       classType = foldl1 AppT [ConT ''Ditraversable, complType]
   normConstrs <- mapM normalConExp constrs
-  constrs' <- mapM (mkPatAndVars . isFarg fArg funTy) normConstrs
+  constrs' <- mapM (mkPatAndVars . isFarg aArg fArg) normConstrs
   mapMDecl <- funD 'dimapM (map mapMClause constrs')
   sequenceDecl <- funD 'disequence (map sequenceClause constrs')
-  return [InstanceD [] classType [mapMDecl,sequenceDecl]]
-      where isFarg fArg funTy (constr, args) =
-                (constr, map (\t -> (t `containsType'` fArg, t `containsType'` funTy)) args)
+  return [mkInstanceD [] classType [mapMDecl,sequenceDecl]]
+      where isFarg aArg' fArg' (constr, args, gadtTy) =
+              let (aArg, fArg) = getBinaryFArgs aArg' fArg' gadtTy
+                  funTy = foldl AppT ArrowT [aArg,fArg]
+              in (constr, map (\t -> (t `containsType'` fArg, t `containsType'` funTy)) args)
             filterVar _ _ nonFarg ([],[]) x  = nonFarg x
             filterVar farg _ _ ([depth],[]) x = farg depth x
             filterVar _ aarg _ ([_],[depth]) x = aarg depth x

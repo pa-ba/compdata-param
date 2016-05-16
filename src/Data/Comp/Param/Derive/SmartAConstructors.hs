@@ -30,7 +30,7 @@ import Control.Monad
  'injectA . dimap Var id' is automatically inserted. -}
 smartAConstructors :: Name -> Q [Dec]
 smartAConstructors fname = do
-    TyConI (DataD _cxt _tname _targs constrs _deriving) <- abstractNewtypeQ $ reify fname
+    Just (DataInfo _cxt _tname _targs constrs _deriving) <- abstractNewtypeQ $ reify fname
     let cons = map abstractConType constrs
     liftM concat $ mapM genSmartConstr cons
         where genSmartConstr (name, args) = do

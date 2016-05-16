@@ -19,6 +19,7 @@ module Data.Comp.Param.Derive.Difunctor
     ) where
 
 import Data.Comp.Derive.Utils
+import Data.Comp.Param.Derive.Utils
 import Data.Comp.Param.Difunctor
 import Language.Haskell.TH
 
@@ -29,11 +30,11 @@ makeDifunctor fname = do
   -- Comments below apply to the example where name = T, args = [a,b,c], and
   -- constrs = [(X,[c]), (Y,[a,c]), (Z,[b -> c])], i.e. the data type
   -- declaration: T a b c = X c | Y a c | Z (b -> c)
-  TyConI (DataD _ name args constrs _) <- abstractNewtypeQ $ reify fname
+  Just (DataInfo _ name args constrs _) <- abstractNewtypeQ $ reify fname
   -- coArg = c (covariant difunctor argument)
-  let coArg :: Name = tyVarBndrName $ last args
+  let coArg :: Type = VarT $ tyVarBndrName $ last args
   -- conArg = b (contravariant difunctor argument)
-  let conArg :: Name = tyVarBndrName $ last $ init args
+  let conArg :: Type = VarT $ tyVarBndrName $ last $ init args
   -- argNames = [a]
   let argNames = map (VarT . tyVarBndrName) (init $ init args)
   -- compType = T a
@@ -41,11 +42,11 @@ makeDifunctor fname = do
   -- classType = Difunctor (T a)
   let classType = AppT (ConT ''Difunctor) complType
   -- constrs' = [(X,[c]), (Y,[a,c]), (Z,[b -> c])]
-  constrs' :: [(Name,[Type])] <- mapM normalConExp constrs
+  constrs' :: [(Name,[Type], Maybe Type)] <- mapM normalConExp constrs
   dimapDecl <- funD 'dimap (map (dimapClause conArg coArg) constrs')
-  return [InstanceD [] classType [dimapDecl]]
-      where dimapClause :: Name -> Name -> (Name,[Type]) -> ClauseQ
-            dimapClause conArg coArg (constr, args) = do
+  return [mkInstanceD [] classType [dimapDecl]]
+      where dimapClause :: Type -> Type -> (Name,[Type], Maybe Type) -> ClauseQ
+            dimapClause conArg' coArg' (constr, args, gadtTy) = do
               fn <- newName "_f"
               gn <- newName "_g"
               varNs <- newNames (length args) "x"
@@ -55,9 +56,10 @@ makeDifunctor fname = do
               let gp = VarP gn
               -- Pattern for the constructor
               let pat = ConP constr $ map VarP varNs
+              let (conArg, coArg) = getBinaryFArgs conArg' coArg' gadtTy
               body <- dimapArgs conArg coArg f g (zip varNs args) (conE constr)
               return $ Clause [fp, gp, pat] (NormalB body) []
-            dimapArgs :: Name -> Name -> ExpQ -> ExpQ
+            dimapArgs :: Type -> Type -> ExpQ -> ExpQ
                       -> [(Name, Type)] -> ExpQ -> ExpQ
             dimapArgs _ _ _ _ [] acc =
                 acc
@@ -69,14 +71,14 @@ makeDifunctor fname = do
             -- to the parameter of the given type.
             -- Example: dimapArg a b (a -> b) f g yields the expression
             -- [|\x -> g . x . f|]
-            dimapArg :: Name -> Name -> Type -> ExpQ -> ExpQ -> ExpQ
+            dimapArg :: Type -> Type -> Type -> ExpQ -> ExpQ -> ExpQ
             dimapArg conArg coArg tp f g
-                | not (containsType tp (VarT conArg)) &&
-                  not (containsType tp (VarT coArg)) = [| id |]
+                | not (containsType tp conArg) &&
+                  not (containsType tp coArg) = [| id |]
                 | otherwise =
                     case tp of
-                      VarT a | a == conArg -> f
-                             | a == coArg -> g
+                      a | a == conArg -> f
+                        | a == coArg -> g
                       AppT (AppT ArrowT tp1) tp2 -> do
                           xn <- newName "x"
                           let ftp1 = dimapArg conArg coArg tp1 f g
@@ -90,7 +92,7 @@ makeDifunctor fname = do
                       SigT tp' _ ->
                           dimapArg conArg coArg tp' f g
                       _ ->
-                          if containsType tp (VarT conArg) then
+                          if containsType tp conArg then
                               [| dimap $f $g |]
                           else
                               [| fmap $g |]

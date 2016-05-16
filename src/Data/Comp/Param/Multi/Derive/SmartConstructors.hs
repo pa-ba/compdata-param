@@ -30,7 +30,7 @@ import Control.Monad
  'inject . hdimap Var id' is automatically inserted. -}
 smartConstructors :: Name -> Q [Dec]
 smartConstructors fname = do
-    TyConI (DataD _cxt tname targs constrs _deriving) <- abstractNewtypeQ $ reify fname
+    Just (DataInfo _cxt tname targs constrs _deriving) <- abstractNewtypeQ $ reify fname
     let iVar = tyVarBndrName $ last targs
     let cons = map (abstractConType &&& iTp iVar) constrs
     liftM concat $ mapM (genSmartConstr (map tyVarBndrName targs) tname) cons

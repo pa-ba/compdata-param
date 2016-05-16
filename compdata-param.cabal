@@ -79,6 +79,7 @@ library
                         Data.Comp.Param.Derive.SmartAConstructors
                         Data.Comp.Param.Derive.Injections
                         Data.Comp.Param.Derive.Projections
+                        Data.Comp.Param.Derive.Utils
 
                         Data.Comp.Param.Multi.Derive.HDifunctor
                         Data.Comp.Param.Multi.Derive.Equality
