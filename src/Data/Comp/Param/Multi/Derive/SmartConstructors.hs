@@ -24,7 +24,6 @@ import Data.Comp.Param.Multi.Term
 import Data.Comp.Param.Multi.HDifunctor
 import Control.Arrow ((&&&))
 import Control.Monad
-import Debug.Trace
 
 {-| Derive smart constructors for a higher-order difunctor. The smart
  constructors are similar to the ordinary constructors, but a
