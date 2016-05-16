@@ -63,7 +63,7 @@ makeOrdHD fname = do
               varYs <- newNames (length args) "y"
               let patX = ConP constr $ map VarP varXs
               let patY = ConP constr $ map VarP varYs
-              let (conArg, coArg) = getBinaryFArgs conArg' coArg' gadtTy
+              let (conArg, coArg) = getTernaryFArgs conArg' coArg' gadtTy
               body <- eqDBody conArg coArg (zip3 varXs varYs args)
               return $ Clause [patX, patY] (NormalB body) []
             eqDBody :: Type -> Type -> [(Name, Name, Type)] -> ExpQ

@@ -53,7 +53,7 @@ makeEqHD fname = do
               -- Patterns for the constructors
               let patx = ConP constr $ map VarP varXs
               let paty = ConP constr $ map VarP varYs
-              let (conArg, coArg) = getBinaryFArgs conArg' coArg' gadtTy
+              let (conArg, coArg) = getTernaryFArgs conArg' coArg' gadtTy
               body <- eqHDBody conArg coArg (zip3 varXs varYs args)
               return $ Clause [patx,paty] (NormalB body) []
             eqHDBody :: Type -> Type -> [(Name, Name, Type)] -> ExpQ

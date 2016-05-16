@@ -23,3 +23,12 @@ import Language.Haskell.TH
 getBinaryFArgs :: Type -> Type -> Maybe Type -> (Type,Type)
 getBinaryFArgs _ _ (Just (AppT (AppT _ t1)  t2)) = (t1, t2)
 getBinaryFArgs t1 t2 _ = (t1, t2)
+
+-- | Auxiliary function to extract the first and second argument of a
+-- ternary type application (the third argument of this function). If
+-- the second argument is @Nothing@ or not of the right shape, the
+-- first two arguments are returned as a default.
+
+getTernaryFArgs :: Type -> Type -> Maybe Type -> (Type,Type)
+getTernaryFArgs _ _ (Just (AppT (AppT (AppT _ t1)  t2) _) ) = (t1, t2)
+getTernaryFArgs t1 t2 _ = (t1, t2)

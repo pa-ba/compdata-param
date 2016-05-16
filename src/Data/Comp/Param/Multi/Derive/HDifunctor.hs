@@ -50,7 +50,7 @@ makeHDifunctor fname = do
               let gp = VarP gn
               -- Pattern for the constructor
               let pat = ConP constr $ map VarP varNs
-              let (conArg, coArg) = getBinaryFArgs conArg' coArg' gadtTy
+              let (conArg, coArg) = getTernaryFArgs conArg' coArg' gadtTy
               body <- hdimapArgs conArg coArg f g (zip varNs args) (conE constr)
               return $ Clause [fp, gp, pat] (NormalB body) []
             hdimapArgs :: Type -> Type -> ExpQ -> ExpQ
@@ -67,7 +67,7 @@ makeHDifunctor fname = do
                 | otherwise =
                     case tp of
                       AppT a _ | a == conArg -> f
-                                      | a == coArg -> g
+                               | a == coArg -> g
                       AppT (AppT ArrowT tp1) tp2 -> do
                           xn <- newName "x"
                           let ftp1 = hdimapArg conArg coArg tp1 f g

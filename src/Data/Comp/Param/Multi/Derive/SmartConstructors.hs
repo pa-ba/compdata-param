@@ -24,6 +24,7 @@ import Data.Comp.Param.Multi.Term
 import Data.Comp.Param.Multi.HDifunctor
 import Control.Arrow ((&&&))
 import Control.Monad
+import Debug.Trace
 
 {-| Derive smart constructors for a higher-order difunctor. The smart
  constructors are similar to the ordinary constructors, but a
@@ -34,10 +35,12 @@ smartConstructors fname = do
     let iVar = tyVarBndrName $ last targs
     let cons = map (abstractConType &&& iTp iVar) constrs
     liftM concat $ mapM (genSmartConstr (map tyVarBndrName targs) tname) cons
-        where iTp iVar (ForallC _ cxt _) =
+        where iTp iVar (ForallC _ cxt constr) =
                   -- Check if the GADT phantom type is constrained
                   case [y | Just (x, y) <- map isEqualP cxt, x == VarT iVar] of
-                    [] -> Nothing
+                    [] -> case constr of
+                      GadtC _ _ (AppT _ tp) -> Just tp
+                      _ -> Nothing
                     tp:_ -> Just tp
               iTp _ _ = Nothing
               genSmartConstr targs tname ((name, args), miTp) = do
