@@ -1,5 +1,5 @@
 Name:			compdata-param
-Version:		0.9
+Version:		0.9.1
 Synopsis:            	Parametric Compositional Data Types
 Description:
 
@@ -90,7 +90,7 @@ library
                         Data.Comp.Param.Multi.Derive.Injections
                         Data.Comp.Param.Multi.Derive.Projections
 
-  Build-Depends:	base >= 4.7, base < 5, template-haskell, mtl, transformers, compdata >= 0.10 && < 0.11
+  Build-Depends:	base >= 4.7, base < 5, template-haskell, mtl, transformers, compdata >= 0.10.1 && < 0.11
   hs-source-dirs:	src
   ghc-options:          -W
 
@@ -99,7 +99,7 @@ Test-Suite test
   Type:                 exitcode-stdio-1.0
   Main-is:		Tests.hs
   hs-source-dirs:	testsuite/tests examples
-  Build-Depends:        base >= 4.7, base < 5, template-haskell, mtl, transformers, compdata >= 0.10 && < 0.11, HUnit,
+  Build-Depends:        base >= 4.7, base < 5, template-haskell, mtl, transformers, compdata >= 0.10.1 && < 0.11, HUnit,
                         test-framework, test-framework-hunit, containers, compdata-param
 
 source-repository head
