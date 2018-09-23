@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeOperators, TypeSynonymInstances, FlexibleInstances,
-  UndecidableInstances, IncoherentInstances, GADTs #-}
+  UndecidableInstances, GADTs #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Equality
@@ -36,7 +36,7 @@ instance PEq a => PEq [a] where
         | length l1 /= length l2 = return False
         | otherwise = liftM or $ mapM (uncurry peq) $ zip l1 l2
 
-instance Eq a => PEq a where
+instance {-# OVERLAPPABLE #-} Eq a => PEq a where
     peq x y = return $ x == y
 
 {-| Signature equality. An instance @EqD f@ gives rise to an instance

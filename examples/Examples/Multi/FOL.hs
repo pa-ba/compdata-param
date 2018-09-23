@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeOperators, FlexibleInstances,
   FlexibleContexts, UndecidableInstances, GADTs, KindSignatures,
-  OverlappingInstances, TypeSynonymInstances, EmptyDataDecls #-}
+  TypeSynonymInstances, EmptyDataDecls #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Examples.MultiParam.FOL
@@ -153,7 +153,7 @@ $(derive [liftSum] [''ElimImp])
 elimImp :: Term Input :-> Term Stage1
 elimImp (Term t) = Term (appHom elimImpHom t)
 
-instance (HDifunctor f, f :<: Stage1) => ElimImp f where
+instance {-# OVERLAPPABLE #-} (HDifunctor f, f :<: Stage1) => ElimImp f where
   elimImpHom = simpCxt . inj
 
 instance ElimImp Impl where
@@ -212,7 +212,7 @@ $(derive [liftSum] [''PushNot])
 pushNotInwards :: Term Stage1 :-> Term Stage2
 pushNotInwards t = Term (cata pushNotAlg t)
 
-instance (HDifunctor f, f :<: Stage2) => PushNot f where
+instance {-# OVERLAPPABLE #-} (HDifunctor f, f :<: Stage2) => PushNot f where
   pushNotAlg = inject . hdimap MP.Var id -- default
 
 instance PushNot Not where
@@ -237,7 +237,7 @@ initialUniqueSupply = genSupply 1
                                        (genSupply (2 * n + 1))
 
 splitUniqueSupply :: UniqueSupply -> (UniqueSupply, UniqueSupply)
-splitUniqueSupply (UniqueSupply	_ l r) = (l,r)
+splitUniqueSupply (UniqueSupply _ l r) = (l,r)
 
 getUnique :: UniqueSupply -> (Unique, UniqueSupply)
 getUnique (UniqueSupply n l _) = (n,l)
