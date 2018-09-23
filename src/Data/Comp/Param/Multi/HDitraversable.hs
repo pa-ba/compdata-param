@@ -1,5 +1,5 @@
 {-# LANGUAGE Rank2Types, FlexibleInstances, MultiParamTypeClasses,
-  FlexibleContexts, OverlappingInstances, TypeOperators, GADTs #-}
+  FlexibleContexts, TypeOperators, GADTs #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Multi.HDitraversable

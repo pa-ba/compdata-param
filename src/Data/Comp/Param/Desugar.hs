@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses, FlexibleInstances,
-  UndecidableInstances, OverlappingInstances, Rank2Types, TypeOperators #-}
+  UndecidableInstances, Rank2Types, TypeOperators #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Param.Desugar
@@ -41,5 +41,5 @@ desugarA :: (Difunctor f', Difunctor g', DistAnn f p f', DistAnn g p g',
 desugarA (Term t) = Term (appHom (propAnn desugHom) t)
 
 -- |Default desugaring instance.
-instance (Difunctor f, Difunctor g, f :<: g) => Desugar f g where
+instance {-# OVERLAPPABLE #-} (Difunctor f, Difunctor g, f :<: g) => Desugar f g where
     desugHom = simpCxt . inj

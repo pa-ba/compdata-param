@@ -22,7 +22,6 @@ module Data.Comp.Param.Multi.FreshM
     ) where
 
 import Control.Monad.Reader
-import Control.Applicative
 
 -- |Monad for generating fresh (abstract) names.
 newtype FreshM a = FreshM{unFreshM :: Reader Int a}

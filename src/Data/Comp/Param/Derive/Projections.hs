@@ -37,7 +37,7 @@ projn n = do
   sequence $ (sigD p $ genSig gvars avar bvar) : d
     where genSig gvars avar bvar = do
             let fvar = mkName "f"
-            let cxt = map (\g -> classP ''(:<:) [varT g, varT fvar]) gvars
+            let cxt = map (\g -> conT ''(:<:) `appT` varT g `appT` varT fvar) gvars
             let tp = foldl1 (\a g -> conT ''(:+:) `appT` g `appT` a)
                             (map varT gvars)
             let tp' = arrowT `appT` (varT fvar `appT` varT avar `appT`
@@ -68,7 +68,7 @@ projectn n = do
     where genSig gvars avar bvar = do
             let fvar = mkName "f"
             let hvar = mkName "h"
-            let cxt = map (\g -> classP ''(:<:) [varT g, varT fvar]) gvars
+            let cxt = map (\g -> conT ''(:<:) `appT` varT g `appT` varT fvar) gvars
             let tp = foldl1 (\a g -> conT ''(:+:) `appT` g `appT` a)
                             (map varT gvars)
             let tp' = conT ''Cxt `appT` varT hvar `appT` varT fvar
@@ -91,10 +91,10 @@ deepProjectn n = do
   sequence $ (sigD p $ genSig gvars) : d
     where genSig gvars = do
             let fvar = mkName "f"
-            let cxt = map (\g -> classP ''(:<:) [varT g, varT fvar]) gvars
+            let cxt = map (\g -> conT ''(:<:) `appT` varT g `appT` varT fvar) gvars
             let tp = foldl1 (\a g -> conT ''(:+:) `appT` g `appT` a)
                             (map varT gvars)
-            let cxt' = classP ''Ditraversable [tp]
+            let cxt' = conT ''Ditraversable `appT` tp
             let tp' = arrowT `appT` (conT ''Term `appT` varT fvar)
                              `appT` (conT ''Maybe `appT` (conT ''Term `appT` tp))
             forallT (map PlainTV $ fvar : gvars) (sequence $ cxt' : cxt) tp'
