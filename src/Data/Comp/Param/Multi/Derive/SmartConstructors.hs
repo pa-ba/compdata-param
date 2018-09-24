@@ -55,6 +55,8 @@ smartConstructors fname = do
                     sig = genSig targs tname sname args miTp
                     function = [funD sname [clause pats (normalB [|inject (hdimap Var id $val)|]) []]]
                 sequence $ sig ++ function
+              isVar (VarT n) = [n]
+              isVar _ = []
               genSig targs tname sname 0 miTp = (:[]) $ do
                 hvar <- newName "h"
                 fvar <- newName "f"
@@ -62,7 +64,7 @@ smartConstructors fname = do
                 bvar <- newName "b"
                 ivar <- newName "i"
                 let targs' = init $ init $ init targs
-                    vars = hvar:fvar:avar:bvar:maybe [ivar] (const []) miTp++targs'
+                    vars = hvar:fvar:avar:bvar:maybe [ivar] isVar miTp++targs'
                     h = varT hvar
                     f = varT fvar
                     a = varT avar

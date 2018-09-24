@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, TypeOperators, MultiParamTypeClasses,
-  FlexibleInstances, FlexibleContexts, UndecidableInstances, OverlappingInstances #-}
+  FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Examples.Param.Thunk
@@ -57,7 +57,7 @@ evalT t = nfT $ Term (cata evalAlgT t)
 -- instance (Ditraversable f Maybe Any, f :<: v) => EvalT f v where
 --   evalAlgT  = strict'
 
-instance (Difunctor f, f :<: v) => EvalT f v where
+instance {-# OVERLAPPABLE #-} (Difunctor f, f :<: v) => EvalT f v where
   evalAlgT  = inject'
 
 

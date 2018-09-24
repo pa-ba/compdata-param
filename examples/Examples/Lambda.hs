@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeOperators, MultiParamTypeClasses,
   FlexibleInstances, FlexibleContexts, UndecidableInstances,
-  OverlappingInstances, Rank2Types, GADTs #-}
+  Rank2Types, GADTs #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Examples.Param.Lambda

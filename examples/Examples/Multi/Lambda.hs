@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeOperators, MultiParamTypeClasses,
   FlexibleInstances, FlexibleContexts, UndecidableInstances,
-  OverlappingInstances, Rank2Types, GADTs, KindSignatures,
+  Rank2Types, GADTs, KindSignatures,
   ScopedTypeVariables, TypeFamilies #-}
 --------------------------------------------------------------------------------
 -- |
@@ -22,7 +22,7 @@ import Data.Comp.Param.Multi.Show ()
 import Data.Comp.Param.Multi.Equality ()
 import Data.Comp.Param.Multi.Derive
 import Control.Monad (liftM2)
-import Control.Monad.Error (MonadError, throwError)
+import Control.Monad.Except (MonadError, throwError)
 
 data Lam :: (* -> *) -> (* -> *) -> * -> * where
   Lam :: (a i -> b j) -> Lam a b (i -> j)
@@ -36,7 +36,7 @@ data Err :: (* -> *) -> (* -> *) -> * -> * where
   Err :: Err a b i
 type Sig = Lam :+: App :+: Const :+: Plus :+: Err
 
-$(derive [smartConstructors, makeHDifunctor, makeShowHD, makeEqHD]
+$(derive [smartConstructors, makeHDifunctor, makeEqHD]
          [''Lam, ''App, ''Const, ''Plus, ''Err])
 
 -- * Tagless interpretation
@@ -90,7 +90,7 @@ instance Monad m => EvalM m Const where
 instance Monad m => EvalM m Plus where
   evalMAlg (Plus (M mx) (M my)) = liftM2 (+) mx my
 
-instance MonadError String m => EvalM m Err where
+instance (MonadError String m, Monad m) => EvalM m Err where
   evalMAlg Err = throwError "error" -- 'throwError' rather than 'error'
 
 e :: Term Sig Int
