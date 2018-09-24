@@ -1,5 +1,5 @@
 Name:			compdata-param
-Version:		0.9.1
+Version:		0.9.2
 Synopsis:            	Parametric Compositional Data Types
 Description:
 
@@ -23,7 +23,7 @@ Category:            	Generics
 License:		BSD3
 License-file:		LICENSE
 Author:			Patrick Bahr, Tom Hvitved
-Maintainer:		paba@di.ku.dk
+Maintainer:		paba@itu.dk
 Build-Type:		Simple
 Cabal-Version:          >=1.9.2
 bug-reports:            https://github.com/pa-ba/compdata-param/issues
