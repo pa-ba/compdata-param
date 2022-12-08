@@ -9,3 +9,4 @@ dummy.cabal
 *.tix
 *.mix
 hpcreport
+dist-newstyle
