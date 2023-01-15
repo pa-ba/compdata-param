@@ -39,7 +39,7 @@ import Data.Comp.Param.Ops
 import Data.Comp.Param.Algebra
 import Data.Comp.Param.Ditraversable
 import Data.Comp.Param.Difunctor
-import Control.Monad.Fail ()
+import Control.Monad.Fail (MonadFail)
 import Control.Monad
 
 
